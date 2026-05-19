@@ -30,10 +30,17 @@ export default function TemplatePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterConfig[]>([]);
-  const [chartType, setChartType] = useState('table');
+  const [chartType, setChartType] = useState<string>('table');
 
   const templateId = params?.id as string;
   const template = getTemplate(templateId);
+
+  // Set chartType from template config when template loads
+  useEffect(() => {
+    if (template) {
+      setChartType(template.config.chartType);
+    }
+  }, [template]);
 
   useEffect(() => {
     if (!template) {
