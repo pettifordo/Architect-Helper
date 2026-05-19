@@ -65,6 +65,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Demo Mode Banner */}
+      {(session as any)?.isDemoMode && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-sm text-yellow-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎬</span>
+              <span>
+                <strong>Demo Mode:</strong> This is a preview with mock LeanIX data.
+              </span>
+            </div>
+            <span className="text-xs text-yellow-700">
+              Contact your admin to enable live data access
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -72,6 +89,7 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">
               {session.user?.name || session.user?.email}
+              {(session as any)?.isDemoMode && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Demo</span>}
             </span>
             <button
               onClick={() => signOut()}

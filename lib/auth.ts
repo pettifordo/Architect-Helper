@@ -1,11 +1,13 @@
 import { NextAuthOptions } from 'next-auth';
 import AzureADProvider from 'next-auth/providers/azure-ad';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { JWT } from 'next-auth/jwt';
 
 declare module 'next-auth' {
   interface Session {
     accessToken?: string;
     leanixAccessToken?: string;
+    isDemoMode?: boolean;
     user: {
       email?: string | null;
       name?: string | null;
@@ -20,6 +22,7 @@ declare module 'next-auth/jwt' {
     leanixAccessToken?: string;
     leanixRefreshToken?: string;
     leanixTokenExpiry?: number;
+    isDemoMode?: boolean;
   }
 }
 
@@ -61,18 +64,55 @@ async function refreshLeanIXToken(token: JWT): Promise<JWT> {
   }
 }
 
+const isDemoMode =
+  !process.env.AZURE_AD_CLIENT_ID ||
+  !process.env.AZURE_AD_CLIENT_SECRET;
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID || '',
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET || '',
-      tenantId: process.env.AZURE_AD_TENANT_ID || 'common',
-      authorization: {
-        params: {
-          scope: 'openid profile email',
-        },
-      },
-    }),
+    // Azure AD provider (production)
+    ...(isDemoMode
+      ? []
+      : [
+          AzureADProvider({
+            clientId: process.env.AZURE_AD_CLIENT_ID || '',
+            clientSecret: process.env.AZURE_AD_CLIENT_SECRET || '',
+            tenantId: process.env.AZURE_AD_TENANT_ID || 'common',
+            authorization: {
+              params: {
+                scope: 'openid profile email',
+              },
+            },
+          }),
+        ]),
+    // Demo credentials provider (when Azure AD not configured)
+    ...(isDemoMode
+      ? [
+          CredentialsProvider({
+            name: 'Demo Login',
+            credentials: {
+              email: {
+                label: 'Email',
+                type: 'email',
+                placeholder: 'demo@example.com',
+              },
+              password: { label: 'Password', type: 'password' },
+            },
+            async authorize(credentials) {
+              // In demo mode, accept any credentials
+              if (credentials?.email) {
+                return {
+                  id: 'demo-user',
+                  email: credentials.email,
+                  name: credentials.email.split('@')[0],
+                  image: null,
+                };
+              }
+              return null;
+            },
+          }),
+        ]
+      : []),
   ],
   pages: {
     signIn: '/auth/signin',
@@ -80,7 +120,14 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, account, user }) {
-      // On first sign in, try to get LeanIX token
+      // Demo mode - set demo token
+      if (isDemoMode && user) {
+        token.isDemoMode = true;
+        token.leanixAccessToken = 'demo-token';
+        return token;
+      }
+
+      // Production mode - On first sign in, try to get LeanIX token
       if (account) {
         token.accessToken = account.access_token;
 
@@ -109,8 +156,8 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // Refresh LeanIX token if needed
-      if (token.leanixRefreshToken) {
+      // Refresh LeanIX token if needed (production only)
+      if (!isDemoMode && token.leanixRefreshToken) {
         token = await refreshLeanIXToken(token);
       }
 
@@ -120,6 +167,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.accessToken = token.accessToken;
         session.leanixAccessToken = token.leanixAccessToken;
+        session.isDemoMode = token.isDemoMode || false;
       }
       return session;
     },
