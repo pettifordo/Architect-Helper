@@ -106,13 +106,30 @@ export default function BuilderPage() {
         throw new Error(data.errors[0]?.message || 'GraphQL error');
       }
 
-      // Flatten the nested data structure
-      const flatData = data.data ? Object.values(data.data).flat() : [];
+      // Extract data from nested GraphQL structure
+      const getChartData = () => {
+        if (!data.data) return [];
+
+        const flatData: any[] = [];
+        const values = Object.values(data.data);
+
+        values.forEach((item: any) => {
+          if (item?.edges && Array.isArray(item.edges)) {
+            // GraphQL structure: edges -> node
+            flatData.push(...item.edges.map((edge: any) => edge.node));
+          } else if (Array.isArray(item)) {
+            // Direct array
+            flatData.push(...item);
+          }
+        });
+
+        return flatData;
+      };
 
       setResult({
         name: reportName,
         factSheet: selectedFactSheet,
-        data: flatData,
+        data: getChartData(),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

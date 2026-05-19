@@ -95,8 +95,28 @@ export default function TemplatePage() {
     );
   }
 
-  // Get the first data array (could be mockApplications, mockTechnologyStacks, etc.)
-  const chartData = data ? Object.values(data).flat() : [];
+  // Extract data from nested GraphQL structure
+  const getChartData = () => {
+    if (!data) return [];
+
+    // Handle nested structure: { allApplications: { edges: [{node: {...}}] } }
+    const values = Object.values(data);
+    const flatData: any[] = [];
+
+    values.forEach((item: any) => {
+      if (item?.edges && Array.isArray(item.edges)) {
+        // GraphQL structure
+        flatData.push(...item.edges.map((edge: any) => edge.node));
+      } else if (Array.isArray(item)) {
+        // Direct array
+        flatData.push(...item);
+      }
+    });
+
+    return flatData;
+  };
+
+  const chartData = getChartData();
 
   return (
     <div className="min-h-screen bg-gray-50">
