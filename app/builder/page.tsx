@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { FilterConfig } from '@/types/leanix';
+import { FilterPanel } from '@/components/FilterPanel';
+import { ChartTypeSelector } from '@/components/ChartTypeSelector';
+import { ChartRenderer } from '@/components/ChartRenderer';
 
 const FACT_SHEET_TYPES = [
   { id: 'Application', label: 'Applications' },
@@ -13,21 +17,31 @@ const FACT_SHEET_TYPES = [
   { id: 'DataObject', label: 'Data Objects' },
 ];
 
-const CHART_TYPES = [
-  { id: 'table', label: 'Table', icon: '📋' },
-  { id: 'bar', label: 'Bar Chart', icon: '📊' },
-  { id: 'pie', label: 'Pie Chart', icon: '🥧' },
-  { id: 'line', label: 'Line Chart', icon: '📈' },
-  { id: 'scatter', label: 'Scatter Plot', icon: '📍' },
+const AVAILABLE_FIELDS = [
+  'displayName',
+  'state',
+  'businessCriticality',
+  'technicalSuitability',
+  'functionalSuitability',
+  'lxHostingType',
+  'lxSixRClassification',
+  'description',
 ];
+
+interface ReportResult {
+  name: string;
+  factSheet: string;
+  data: any[];
+}
 
 export default function BuilderPage() {
   const [reportName, setReportName] = useState('');
   const [selectedFactSheet, setSelectedFactSheet] = useState('Application');
   const [selectedChart, setSelectedChart] = useState('table');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ReportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterConfig[]>([]);
 
   const handleBuild = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +53,7 @@ export default function BuilderPage() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setFilters([]);
 
     try {
       // Build a basic query for the selected fact sheet type
@@ -91,11 +106,13 @@ export default function BuilderPage() {
         throw new Error(data.errors[0]?.message || 'GraphQL error');
       }
 
+      // Flatten the nested data structure
+      const flatData = data.data ? Object.values(data.data).flat() : [];
+
       setResult({
         name: reportName,
         factSheet: selectedFactSheet,
-        chart: selectedChart,
-        data: data.data,
+        data: flatData,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -158,29 +175,6 @@ export default function BuilderPage() {
                 </select>
               </div>
 
-              {/* Chart Type */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Visualization
-                </label>
-                <div className="space-y-2">
-                  {CHART_TYPES.map((chart) => (
-                    <label key={chart.id} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="chart"
-                        value={chart.id}
-                        checked={selectedChart === chart.id}
-                        onChange={(e) => setSelectedChart(e.target.value)}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-lg">{chart.icon}</span>
-                      <span className="text-gray-700">{chart.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
               {/* Submit Button */}
               <button
                 type="submit"
@@ -201,27 +195,27 @@ export default function BuilderPage() {
           {/* Results */}
           <div className="lg:col-span-2">
             {result && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Report: {result.name}</h2>
-
-                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                  <p><strong>Fact Sheet Type:</strong> {result.factSheet}</p>
-                  <p><strong>Visualization:</strong> {result.chart}</p>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <pre className="bg-gray-50 p-4 rounded text-xs text-gray-800 overflow-auto max-h-96">
-                    {JSON.stringify(result.data, null, 2)}
-                  </pre>
-                </div>
-
-                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                  <p className="font-semibold mb-2">📊 Coming Soon</p>
-                  <p>
-                    Advanced filtering, drill-down capabilities, and full visualization support
-                    will be available in the next phase.
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Report: {result.name}</h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Fact Sheet Type: <span className="font-semibold">{result.factSheet}</span>
                   </p>
                 </div>
+
+                {/* Filter Panel */}
+                <FilterPanel onFilterChange={setFilters} availableFields={AVAILABLE_FIELDS} />
+
+                {/* Chart Type Selector */}
+                <ChartTypeSelector selectedChart={selectedChart} onChartChange={setSelectedChart} />
+
+                {/* Chart */}
+                <ChartRenderer
+                  chartType={selectedChart}
+                  data={result.data}
+                  filters={filters}
+                  factSheetType={result.factSheet}
+                />
               </div>
             )}
 

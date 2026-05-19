@@ -4,16 +4,33 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getTemplate } from '@/lib/templates';
 import { useState, useEffect } from 'react';
+import { FilterConfig } from '@/types/leanix';
+import { FilterPanel } from '@/components/FilterPanel';
+import { ChartTypeSelector } from '@/components/ChartTypeSelector';
+import { ChartRenderer } from '@/components/ChartRenderer';
 
 interface TemplateData {
-  [key: string]: any;
+  [key: string]: any[];
 }
+
+const AVAILABLE_FIELDS = [
+  'displayName',
+  'state',
+  'businessCriticality',
+  'technicalSuitability',
+  'functionalSuitability',
+  'lxHostingType',
+  'lxSixRClassification',
+  'description',
+];
 
 export default function TemplatePage() {
   const params = useParams();
   const [data, setData] = useState<TemplateData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterConfig[]>([]);
+  const [chartType, setChartType] = useState('table');
 
   const templateId = params?.id as string;
   const template = getTemplate(templateId);
@@ -78,6 +95,9 @@ export default function TemplatePage() {
     );
   }
 
+  // Get the first data array (could be mockApplications, mockTechnologyStacks, etc.)
+  const chartData = data ? Object.values(data).flat() : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -120,23 +140,20 @@ export default function TemplatePage() {
         )}
 
         {data && !loading && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Report Data</h2>
+          <div className="space-y-6">
+            {/* Filter Panel */}
+            <FilterPanel onFilterChange={setFilters} availableFields={AVAILABLE_FIELDS} />
 
-            {/* Display the raw data for now */}
-            <div className="overflow-x-auto">
-              <pre className="bg-gray-50 p-4 rounded text-sm text-gray-800 overflow-auto max-h-96">
-                {JSON.stringify(data, null, 2)}
-              </pre>
-            </div>
+            {/* Chart Type Selector */}
+            <ChartTypeSelector selectedChart={chartType} onChartChange={setChartType} />
 
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-              <p className="font-semibold mb-2">💡 Next Steps</p>
-              <p>
-                This is a basic data display. Full visualizations (charts, tables, etc.)
-                will be added as we develop the visualization components.
-              </p>
-            </div>
+            {/* Chart */}
+            <ChartRenderer
+              chartType={chartType}
+              data={chartData}
+              filters={filters}
+              factSheetType={template.name}
+            />
           </div>
         )}
 
