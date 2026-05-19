@@ -161,11 +161,15 @@ export default function TemplatePage() {
 
         {data && !loading && (
           <div className="space-y-6">
-            {/* Filter Panel */}
-            <FilterPanel onFilterChange={setFilters} availableFields={AVAILABLE_FIELDS} />
+            {/* Filter Panel - Hide for graph type */}
+            {template.config.chartType !== 'graph' && (
+              <FilterPanel onFilterChange={setFilters} availableFields={AVAILABLE_FIELDS} />
+            )}
 
-            {/* Chart Type Selector */}
-            <ChartTypeSelector selectedChart={chartType} onChartChange={setChartType} />
+            {/* Chart Type Selector - Hide for graph type */}
+            {template.config.chartType !== 'graph' && (
+              <ChartTypeSelector selectedChart={chartType} onChartChange={setChartType} />
+            )}
 
             {/* Chart */}
             <ChartRenderer

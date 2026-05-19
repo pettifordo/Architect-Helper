@@ -10,6 +10,13 @@ export interface FactSheet {
   createdAt?: string;
 }
 
+export interface Integration {
+  targetAppId: string;
+  type: string;
+  direction: 'inbound' | 'outbound' | 'bidirectional';
+  description: string;
+}
+
 export interface Application extends FactSheet {
   type: 'Application';
   functionalSuitability?: 'unreasonable' | 'insufficient' | 'appropriate' | 'perfect';
@@ -17,6 +24,7 @@ export interface Application extends FactSheet {
   businessCriticality?: 'administrativeService' | 'businessOperational' | 'businessCritical' | 'missionCritical';
   lxHostingType?: string;
   lxSixRClassification?: 'rehost' | 'retire' | 'rearchitect' | 'replatform' | 'retain' | 'repurchase';
+  integrations?: Integration[];
 }
 
 export interface ITComponent extends FactSheet {
@@ -69,7 +77,7 @@ export interface FactSheetConnection<T extends FactSheet = FactSheet> {
 }
 
 // Report configuration types
-export type ChartType = 'table' | 'bar' | 'pie' | 'line' | 'scatter' | 'matrix';
+export type ChartType = 'table' | 'bar' | 'pie' | 'line' | 'scatter' | 'matrix' | 'graph';
 
 export interface ReportConfig {
   id: string;

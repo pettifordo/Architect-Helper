@@ -95,7 +95,7 @@ export const TEMPLATES: Record<string, Template> = {
   'integration-map': {
     id: 'integration-map',
     name: 'Integration Map',
-    description: 'Visualize application integrations and interfaces',
+    description: 'Interactive network visualization showing application integrations and connections',
     icon: '🔗',
     query: `
       query {
@@ -104,6 +104,11 @@ export const TEMPLATES: Record<string, Template> = {
             node {
               id
               displayName
+              description
+              businessCriticality
+              technicalSuitability
+              functionalSuitability
+              state
             }
           }
         }
@@ -113,7 +118,7 @@ export const TEMPLATES: Record<string, Template> = {
       id: 'integration-map',
       name: 'Integration Map',
       factSheetType: 'Application',
-      chartType: 'table',
+      chartType: 'graph',
     },
   },
   'risk-dashboard': {

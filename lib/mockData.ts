@@ -15,6 +15,11 @@ export const mockApplications = {
           lxSixRClassification: 'retain',
           updatedAt: '2024-05-15T10:30:00Z',
           createdAt: '2022-01-10T08:00:00Z',
+          integrations: [
+            { targetAppId: 'app-2', type: 'API', direction: 'bidirectional', description: 'Real-time customer data sync' },
+            { targetAppId: 'app-5', type: 'Database Sync', direction: 'outbound', description: 'Financial data export' },
+            { targetAppId: 'app-7', type: 'API', direction: 'outbound', description: 'Payroll integration' },
+          ],
         },
       },
       {
@@ -30,6 +35,11 @@ export const mockApplications = {
           lxSixRClassification: 'retain',
           updatedAt: '2024-05-14T14:20:00Z',
           createdAt: '2021-06-15T09:00:00Z',
+          integrations: [
+            { targetAppId: 'app-1', type: 'API', direction: 'bidirectional', description: 'Real-time customer data sync' },
+            { targetAppId: 'app-3', type: 'File Transfer', direction: 'outbound', description: 'Customer order export' },
+            { targetAppId: 'app-6', type: 'Email Gateway', direction: 'outbound', description: 'Email notifications' },
+          ],
         },
       },
       {
@@ -45,6 +55,10 @@ export const mockApplications = {
           lxSixRClassification: 'rearchitect',
           updatedAt: '2024-05-10T11:45:00Z',
           createdAt: '2019-03-20T07:00:00Z',
+          integrations: [
+            { targetAppId: 'app-2', type: 'File Transfer', direction: 'inbound', description: 'Customer order import' },
+            { targetAppId: 'app-8', type: 'Batch Process', direction: 'inbound', description: 'Data migration' },
+          ],
         },
       },
       {
@@ -60,6 +74,9 @@ export const mockApplications = {
           lxSixRClassification: 'retain',
           updatedAt: '2024-05-13T09:15:00Z',
           createdAt: '2021-09-01T10:00:00Z',
+          integrations: [
+            { targetAppId: 'app-6', type: 'Webhook', direction: 'bidirectional', description: 'Team notifications' },
+          ],
         },
       },
       {
@@ -75,6 +92,10 @@ export const mockApplications = {
           lxSixRClassification: 'retain',
           updatedAt: '2024-05-16T13:00:00Z',
           createdAt: '2022-11-05T08:30:00Z',
+          integrations: [
+            { targetAppId: 'app-1', type: 'Database Sync', direction: 'inbound', description: 'Financial data import' },
+            { targetAppId: 'app-2', type: 'Data Pipeline', direction: 'inbound', description: 'Sales metrics ingestion' },
+          ],
         },
       },
       {
@@ -90,6 +111,11 @@ export const mockApplications = {
           lxSixRClassification: 'retain',
           updatedAt: '2024-05-17T10:45:00Z',
           createdAt: '2020-02-10T09:00:00Z',
+          integrations: [
+            { targetAppId: 'app-2', type: 'Email Gateway', direction: 'inbound', description: 'Email notifications' },
+            { targetAppId: 'app-4', type: 'Webhook', direction: 'bidirectional', description: 'Team notifications' },
+            { targetAppId: 'app-7', type: 'Directory Sync', direction: 'bidirectional', description: 'User management' },
+          ],
         },
       },
       {
@@ -105,6 +131,10 @@ export const mockApplications = {
           lxSixRClassification: 'retain',
           updatedAt: '2024-05-12T15:30:00Z',
           createdAt: '2021-04-20T08:00:00Z',
+          integrations: [
+            { targetAppId: 'app-1', type: 'API', direction: 'inbound', description: 'Payroll integration' },
+            { targetAppId: 'app-6', type: 'Directory Sync', direction: 'bidirectional', description: 'User management' },
+          ],
         },
       },
       {
@@ -120,6 +150,9 @@ export const mockApplications = {
           lxSixRClassification: 'retire',
           updatedAt: '2024-01-05T11:20:00Z',
           createdAt: '2018-07-15T07:30:00Z',
+          integrations: [
+            { targetAppId: 'app-3', type: 'Batch Process', direction: 'outbound', description: 'Data migration' },
+          ],
         },
       },
     ],

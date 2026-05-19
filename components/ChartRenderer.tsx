@@ -14,6 +14,7 @@ import { BarChart } from './charts/BarChart';
 import { PieChart } from './charts/PieChart';
 import { LineChart } from './charts/LineChart';
 import { ScatterChart } from './charts/ScatterChart';
+import { IntegrationMap } from './IntegrationMap';
 
 interface ChartRendererProps {
   chartType: string;
@@ -82,6 +83,13 @@ export function ChartRenderer({ chartType, data, filters, factSheetType }: Chart
       return (
         <div className="bg-white rounded-lg shadow p-6">
           <ScatterChart data={scatterData} title="Technical vs Functional Suitability" />
+        </div>
+      );
+
+    case 'graph':
+      return (
+        <div className="bg-white rounded-lg shadow overflow-hidden" style={{ height: '600px' }}>
+          <IntegrationMap applications={filteredData} />
         </div>
       );
 
