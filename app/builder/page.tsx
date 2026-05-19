@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 
 const FACT_SHEET_TYPES = [
   { id: 'Application', label: 'Applications' },
@@ -23,7 +22,6 @@ const CHART_TYPES = [
 ];
 
 export default function BuilderPage() {
-  const { data: session } = useSession();
   const [reportName, setReportName] = useState('');
   const [selectedFactSheet, setSelectedFactSheet] = useState('Application');
   const [selectedChart, setSelectedChart] = useState('table');

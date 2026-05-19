@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { getTemplate } from '@/lib/templates';
 import { useState, useEffect } from 'react';
@@ -12,7 +11,6 @@ interface TemplateData {
 
 export default function TemplatePage() {
   const params = useParams();
-  const { data: session } = useSession();
   const [data, setData] = useState<TemplateData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +19,7 @@ export default function TemplatePage() {
   const template = getTemplate(templateId);
 
   useEffect(() => {
-    if (!template || !session?.leanixAccessToken) {
+    if (!template) {
       setLoading(false);
       return;
     }
@@ -59,7 +57,7 @@ export default function TemplatePage() {
     }
 
     fetchData();
-  }, [template, session?.leanixAccessToken]);
+  }, [template]);
 
   if (!template) {
     return (
