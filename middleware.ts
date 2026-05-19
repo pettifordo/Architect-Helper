@@ -1,27 +1,28 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 
-export default withAuth(
-  function middleware(req: NextRequest) {
+export function middleware(request: NextRequest) {
+  // Check for demo mode bypass cookie
+  const demoAuth = request.cookies.get('demo-auth')?.value;
+
+  // In demo mode, allow all access
+  if (demoAuth === 'true') {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => {
-        // Always authorize if user has a token
-        // This works for both demo mode (credentials provider) and production (Azure AD)
-        return !!token;
-      },
-    },
-    pages: {
-      signIn: '/auth/signin',
-      error: '/auth/signin',
-    },
   }
-);
+
+  // Allow access to signin and api/auth routes
+  if (
+    request.nextUrl.pathname === '/auth/signin' ||
+    request.nextUrl.pathname.startsWith('/api/auth')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Otherwise redirect to signin
+  return NextResponse.redirect(new URL('/auth/signin', request.url));
+}
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.svg|.png|.jpg|.jpeg|.gif|.webp).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

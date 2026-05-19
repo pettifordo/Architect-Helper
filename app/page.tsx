@@ -1,9 +1,8 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const REPORT_TEMPLATES = [
   {
@@ -39,48 +38,38 @@ const REPORT_TEMPLATES = [
 ];
 
 export default function Home() {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const [isDemoMode, setIsDemoMode] = useState(true);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    // Check if we have demo auth cookie
+    const hasDemoAuth = document.cookie.includes('demo-auth=true');
+    if (!hasDemoAuth) {
       router.push('/auth/signin');
     }
-  }, [status, router]);
+  }, [router]);
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
+  const handleSignOut = () => {
+    document.cookie = 'demo-auth=; path=/; max-age=0';
+    router.push('/auth/signin');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Demo Mode Banner */}
-      {(session as any)?.isDemoMode && (
-        <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-sm text-yellow-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🎬</span>
-              <span>
-                <strong>Demo Mode:</strong> This is a preview with mock LeanIX data.
-              </span>
-            </div>
-            <span className="text-xs text-yellow-700">
-              Contact your admin to enable live data access
+      <div className="bg-yellow-50 border-b border-yellow-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-sm text-yellow-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎬</span>
+            <span>
+              <strong>Demo Mode:</strong> Exploring with mock LeanIX data
             </span>
           </div>
+          <span className="text-xs text-yellow-700">
+            Contact your admin to enable live data
+          </span>
         </div>
-      )}
+      </div>
 
       {/* Header */}
       <header className="bg-white shadow">
@@ -88,11 +77,10 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-gray-900">LeanIX Viewer</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">
-              {session.user?.name || session.user?.email}
-              {(session as any)?.isDemoMode && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Demo</span>}
+              Demo User <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Demo</span>
             </span>
             <button
-              onClick={() => signOut()}
+              onClick={handleSignOut}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Sign out
