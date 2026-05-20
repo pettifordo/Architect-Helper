@@ -8,6 +8,8 @@ import { FilterConfig } from '@/types/leanix';
 import { FilterPanel } from '@/components/FilterPanel';
 import { ChartTypeSelector } from '@/components/ChartTypeSelector';
 import { ChartRenderer } from '@/components/ChartRenderer';
+import { ReportSummary } from '@/components/ReportSummary';
+import { generateApplicationInsights } from '@/lib/insightsGenerator';
 
 interface TemplateData {
   [key: string]: any[];
@@ -31,6 +33,7 @@ export default function TemplatePage() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterConfig[]>([]);
   const [chartType, setChartType] = useState<string>('table');
+  const [insights, setInsights] = useState<ReturnType<typeof generateApplicationInsights>>([]);
 
   const templateId = params?.id as string;
   const template = getTemplate(templateId);
@@ -72,6 +75,14 @@ export default function TemplatePage() {
 
         setData(result.data);
         setError(null);
+
+        // Generate insights for applications
+        if (template?.name === 'Application Landscape' || template?.name === 'Application Portfolio' || template?.name === 'Risk Assessment' || template?.name === 'Integration Map') {
+          const appInsights = generateApplicationInsights(
+            result.data?.allApplications?.edges?.map((e: any) => e.node) || []
+          );
+          setInsights(appInsights);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         setData(null);
@@ -168,6 +179,11 @@ export default function TemplatePage() {
 
         {data && !loading && (
           <div className="space-y-6">
+            {/* Insights Summary */}
+            {insights.length > 0 && (
+              <ReportSummary insights={insights} title={template.name} />
+            )}
+
             {/* Filter Panel - Hide for graph type */}
             {template.config.chartType !== 'graph' && (
               <FilterPanel onFilterChange={setFilters} availableFields={AVAILABLE_FIELDS} />

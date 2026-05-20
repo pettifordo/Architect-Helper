@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -11,6 +11,7 @@ import ReactFlow, {
   MiniMap,
   Panel,
 } from 'reactflow';
+import dagre from 'dagre';
 import 'reactflow/dist/style.css';
 
 import { ApplicationNode, applicationsToGraphNodes, relationsToGraphEdges, getIntegrationTypes, getCriticalityLevels } from '@/lib/graphDataTransform';
@@ -26,12 +27,41 @@ const CRITICALITY_COLORS_MAP: Record<string, string> = {
   administrativeService: '#6b7280',
 };
 
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+  const dagreGraph = new dagre.graphlib.Graph({ compound: true });
+  dagreGraph.setGraph({ rankdir: 'TB', ranksep: 150, nodesep: 100 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: 150, height: 150 });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - 75,
+        y: nodeWithPosition.y - 75,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
 export function IntegrationMap({ applications }: IntegrationMapProps) {
   const initialNodes = applicationsToGraphNodes(applications);
   const initialEdges = relationsToGraphEdges(applications);
+  const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
   const [selectedNode, setSelectedNode] = useState<ApplicationNode | null>(null);
 
   const integrationTypes = getIntegrationTypes(applications);
@@ -55,7 +85,9 @@ export function IntegrationMap({ applications }: IntegrationMapProps) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
-        fitView
+        defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+        minZoom={0.2}
+        maxZoom={2}
       >
         <Background color="#aaa" gap={16} />
         <Controls />

@@ -8,6 +8,8 @@ export interface ApplicationNode {
   technicalSuitability: string;
   functionalSuitability: string;
   state: string;
+  lxHostingType?: string;
+  lxSixRClassification?: string;
   integrations?: Integration[];
 }
 

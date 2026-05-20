@@ -6,6 +6,8 @@ import { FilterConfig } from '@/types/leanix';
 import { FilterPanel } from '@/components/FilterPanel';
 import { ChartTypeSelector } from '@/components/ChartTypeSelector';
 import { ChartRenderer } from '@/components/ChartRenderer';
+import { ReportSummary } from '@/components/ReportSummary';
+import { generateApplicationInsights } from '@/lib/insightsGenerator';
 
 const FACT_SHEET_TYPES = [
   { id: 'Application', label: 'Applications' },
@@ -32,6 +34,7 @@ interface ReportResult {
   name: string;
   factSheet: string;
   data: any[];
+  insights?: ReturnType<typeof generateApplicationInsights>;
 }
 
 export default function BuilderPage() {
@@ -126,10 +129,19 @@ export default function BuilderPage() {
         return flatData;
       };
 
+      const chartData = getChartData();
+
+      // Generate insights for applications
+      let insights: ReturnType<typeof generateApplicationInsights> | undefined;
+      if (selectedFactSheet === 'Application') {
+        insights = generateApplicationInsights(chartData);
+      }
+
       setResult({
         name: reportName,
         factSheet: selectedFactSheet,
-        data: getChartData(),
+        data: chartData,
+        insights,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -219,6 +231,11 @@ export default function BuilderPage() {
                     Fact Sheet Type: <span className="font-semibold">{result.factSheet}</span>
                   </p>
                 </div>
+
+                {/* Insights Summary */}
+                {result.insights && result.insights.length > 0 && (
+                  <ReportSummary insights={result.insights} title={result.name} />
+                )}
 
                 {/* Filter Panel */}
                 <FilterPanel onFilterChange={setFilters} availableFields={AVAILABLE_FIELDS} />
