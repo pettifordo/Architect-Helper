@@ -28,31 +28,58 @@ const CRITICALITY_COLORS_MAP: Record<string, string> = {
 };
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
-  const dagreGraph = new dagre.graphlib.Graph({ compound: true });
-  dagreGraph.setGraph({ rankdir: 'TB', ranksep: 150, nodesep: 100 });
+  try {
+    const dagreGraph = new dagre.graphlib.Graph({ compound: true });
+    dagreGraph.setGraph({ rankdir: 'TB', ranksep: 150, nodesep: 100 });
 
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 150, height: 150 });
-  });
+    nodes.forEach((node) => {
+      dagreGraph.setNode(node.id, { width: 150, height: 150 });
+    });
 
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
+    edges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target);
+    });
 
-  dagre.layout(dagreGraph);
+    dagre.layout(dagreGraph);
 
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
+    const layoutedNodes = nodes.map((node, index) => {
+      const nodeWithPosition = dagreGraph.node(node.id);
+
+      // Fallback if dagre didn't position the node
+      if (!nodeWithPosition) {
+        return {
+          ...node,
+          position: {
+            x: (index % 4) * 300,
+            y: Math.floor(index / 4) * 300,
+          },
+        };
+      }
+
+      return {
+        ...node,
+        position: {
+          x: nodeWithPosition.x - 75,
+          y: nodeWithPosition.y - 75,
+        },
+      };
+    });
+
+    return { nodes: layoutedNodes, edges };
+  } catch (error) {
+    console.error('Dagre layout error:', error);
+    // Return nodes with grid fallback layout if dagre fails
     return {
-      ...node,
-      position: {
-        x: nodeWithPosition.x - 75,
-        y: nodeWithPosition.y - 75,
-      },
+      nodes: nodes.map((node, index) => ({
+        ...node,
+        position: {
+          x: (index % 4) * 300,
+          y: Math.floor(index / 4) * 300,
+        },
+      })),
+      edges,
     };
-  });
-
-  return { nodes: layoutedNodes, edges };
+  }
 };
 
 export function IntegrationMap({ applications }: IntegrationMapProps) {
